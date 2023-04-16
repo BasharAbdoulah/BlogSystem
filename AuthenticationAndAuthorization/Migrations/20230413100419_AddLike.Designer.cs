@@ -4,6 +4,7 @@ using BlogSystem;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BlogSystem.Migrations
 {
     [DbContext(typeof(BlogDataContext))]
-    partial class BlogDataContextModelSnapshot : ModelSnapshot
+    [Migration("20230413100419_AddLike")]
+    partial class AddLike
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -67,10 +70,6 @@ namespace BlogSystem.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("ID");
-
-                    b.HasIndex("PostId");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("likes");
                 });
@@ -144,21 +143,6 @@ namespace BlogSystem.Migrations
                 });
 
             modelBuilder.Entity("BlogSystem.DBModels.Comment", b =>
-                {
-                    b.HasOne("BlogSystem.DBModels.Post", null)
-                        .WithMany()
-                        .HasForeignKey("PostId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("BlogSystem.DBModels.User", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("BlogSystem.DBModels.Like", b =>
                 {
                     b.HasOne("BlogSystem.DBModels.Post", null)
                         .WithMany()

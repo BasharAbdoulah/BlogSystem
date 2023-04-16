@@ -53,12 +53,14 @@ namespace BlogSystem.Controllers
                         new Claim("Admin", resultLoginCheck.Admin.ToString()),
                         new Claim("UserName", _userData.FullName),
                         new Claim("Email", _userData.Email),
+                        new Claim(ClaimTypes.Role, "User")
 
                     };
 
                     if (resultLoginCheck.Admin == true)
                     {
-                        claims.Add(new Claim(ClaimTypes.Role, "Admin"));
+
+                        claims[7] = new Claim(ClaimTypes.Role, "Admin");
                     }
 
 

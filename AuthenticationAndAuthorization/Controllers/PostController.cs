@@ -34,7 +34,7 @@ namespace BlogSystem.Controllers
             return Ok(posts);
         }
 
-        [HttpPost]
+        [HttpPost, Authorize(Roles ="User")]
         public async Task<ActionResult<Post>> Post(Post post)
         {
             if (post == null)

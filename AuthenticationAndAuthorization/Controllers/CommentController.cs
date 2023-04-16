@@ -9,6 +9,7 @@ namespace BlogSystem.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles ="User")]
     public class CommentController : ControllerBase
     {
         private readonly BlogDataContext dBContext;
@@ -22,7 +23,27 @@ namespace BlogSystem.Controllers
         public async Task<ActionResult<List<Comment>>> Get()
         {
             var comments = await dBContext.Comments.ToListAsync();
+            if (comments == null || comments.Count == 0) return BadRequest();
             return Ok(comments);
+        }
+
+        //[HttpGet("GetCommentsByPost")]
+        //public async Task<ActionResult<List<Comment>>> GetBYPost(int id) { 
+        
+        //    var commentsByPost = await dBContext.Comments.Where(c => c.PostId == id).ToListAsync();
+        //    if (!commentsByPost.Any()) return BadRequest();
+
+        //    return Ok(commentsByPost);
+        //}
+
+        [HttpGet("GetCommentsByUser")]
+        public async Task<ActionResult<List<Comment>>> GetBYUser(int id)
+        {
+
+            var commentsByUser = await dBContext.Comments.Where(c => c.UserId == id).ToListAsync();
+            if (!commentsByUser.Any()) return BadRequest();
+
+            return Ok(commentsByUser);
         }
 
         [HttpGet("commentsByPostId/{id}"), Authorize]

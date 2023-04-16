@@ -33,10 +33,24 @@ public partial class BlogDataContext : DbContext
             .HasOne<Post>()
             .WithMany()
             .HasForeignKey(p => p.PostId);
+
+        modelBuilder.Entity<Like>()
+            .HasOne<User>()
+            .WithMany()
+            .HasForeignKey(p => p.UserId);
+
+        modelBuilder.Entity<Like>()
+            .HasOne<Post>()
+            .WithMany()
+            .HasForeignKey(p => p.PostId);
+
+
     }
 
     public DbSet<Post> Posts { get; set; } = null!;
     public DbSet<User> Users { get; set; } = null!;
+
+    public DbSet<Like> likes { get; set; } = null!;
 
     public DbSet<Comment> Comments { get; set; } = null!;
 
