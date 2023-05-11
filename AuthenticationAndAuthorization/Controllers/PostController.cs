@@ -1,4 +1,5 @@
 ﻿using BlogSystem.DBModels;
+using BlogSystem.UOW;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -12,24 +13,24 @@ namespace BlogSystem.Controllers
 
     public class PostsController : ControllerBase
     {
-        private readonly BlogDataContext dBContext;
+        private readonly IUnitOfWork unitOfWork;
 
-        public PostsController(BlogDataContext dBContext)
+        public PostsController(IUnitOfWork unitOfWork)
         {
-            this.dBContext = dBContext;
+            this.unitOfWork = unitOfWork;
         }
 
         [HttpGet, Authorize(Roles ="Admin")]
         public async Task<ActionResult<List<Post>>> Get()
         {
-            var posts = await dBContext.Posts.ToListAsync();
+            var posts = await unitOfWork.Post.All();
             return Ok(posts);
         }
 
         [HttpGet("postsByUserId/{id}")]
         public async Task<ActionResult<List<Post>>> GetByUserId(int id)
         {
-            var posts = await dBContext.Posts.Where(p => p.UserId == id).ToListAsync();
+            var posts = "";
 
             return Ok(posts);
         }
@@ -44,8 +45,7 @@ namespace BlogSystem.Controllers
 
             try
             {
-                dBContext.Posts.Add(post);
-                await dBContext.SaveChangesAsync();
+
             }
             catch (Exception ex)
             {
@@ -57,16 +57,15 @@ namespace BlogSystem.Controllers
         [HttpPut]
         public async Task<ActionResult<Post>> Edit(Post post)
         {
-            var OldPost = await dBContext.Posts.FirstOrDefaultAsync(p => p.Id == post.Id);
+            var OldPost = "";
             if (OldPost == null) return BadRequest();
 
             try
             {
-                OldPost.PostContent = post.PostContent;
-                OldPost.PostTitle = post.PostTitle;
-                OldPost.Tags = post.Tags;
-                OldPost.PostImg = post.PostImg;
-                await dBContext.SaveChangesAsync();
+                //OldPost.PostContent = post.PostContent;
+                //OldPost.PostTitle = post.PostTitle;
+                //OldPost.Tags = post.Tags;
+                //OldPost.PostImg = post.PostImg;
             }
             catch (Exception ex) { return BadRequest(ex.Message); }
 
@@ -76,12 +75,11 @@ namespace BlogSystem.Controllers
         [HttpDelete]
         public async Task<ActionResult<Post>> Delete(int id)
         {
-            var post = await dBContext.Posts.FirstOrDefaultAsync(post => post.Id == id);
+            var post = "";
             if (post == null) return BadRequest();
             try
             {
-                dBContext.Posts.Remove(post);
-                await dBContext.SaveChangesAsync();
+ 
             }
             catch (Exception ex)
             {

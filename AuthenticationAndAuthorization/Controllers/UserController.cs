@@ -1,4 +1,6 @@
-﻿using BlogSystem.DBModels;
+﻿using BlogSystem.Core;
+using BlogSystem.DBModels;
+using BlogSystem.UOW;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -11,16 +13,19 @@ namespace BlogSystem.Controllers
     public class UserController : ControllerBase
     {
         private readonly BlogDataContext context;
+        private readonly IUnitOfWork unitOfWork;
 
-        public UserController(BlogDataContext context)
+
+        public UserController(IUnitOfWork unitOfWork)
         {
-            this.context = context;
+            this.unitOfWork = unitOfWork;
         }
 
         [HttpGet]
         public async Task<ActionResult<List<User>>> get()
         {
-            var users = await context.Users.ToListAsync();
+    
+            var users = await unitOfWork.User.All();
             return Ok(users);
         }
         //
