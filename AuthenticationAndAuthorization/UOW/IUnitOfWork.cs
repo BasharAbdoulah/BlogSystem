@@ -6,6 +6,8 @@ namespace BlogSystem.UOW
     {
         IUserRepository User { get; }
         IPostRepository Post { get; }
+        ILikeRepository Like { get; }
+        ICommentRepository Comment { get; }
         Task CompleteAsync();
         void Dispose();
     }

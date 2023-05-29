@@ -1,4 +1,5 @@
 ﻿using BlogSystem.DBModels;
+using BlogSystem.UOW;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -8,16 +9,14 @@ namespace BlogSystem.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles ="User")]
+    [Authorize]
     public class LikeController : ControllerBase
     {
-        private readonly IConfiguration configuration;
-        private readonly BlogDataContext dataContext;
+        private readonly IUnitOfWork unitOfWork;
 
-        public LikeController(IConfiguration configuration, BlogDataContext dataContext)
+        public LikeController(IUnitOfWork unitOfWork)
         {
-            this.configuration = configuration;
-            this.dataContext = dataContext;
+            this.unitOfWork = unitOfWork;
         }
 
         [HttpPost]
@@ -27,8 +26,20 @@ namespace BlogSystem.Controllers
 
             try
             {
-                dataContext.likes.Add(like);
-                await dataContext.SaveChangesAsync();
+                var likes = await unitOfWork.Like.All();
+                var isExist = likes.Any(l => l.PostId == like.PostId && l.UserId == like.UserId);
+                var likedPost = await unitOfWork.Post.GetById(like.PostId);
+
+                if (isExist)
+                {
+                    return BadRequest("Already liked!");
+                } else
+                {
+                likedPost.Likes++;
+                    likedPost.CreationDate = DateTime.Now;
+                await unitOfWork.Like.Add(like);
+                await unitOfWork.CompleteAsync();
+                }
 
             } catch (Exception ex) 
             { BadRequest(ex.Message); }
@@ -37,22 +48,73 @@ namespace BlogSystem.Controllers
         }
 
         //Get Likes by post id
-        [HttpGet("LikesByPost")]
-        public async Task<ActionResult<List<Like>>> Get(int id)
+        [HttpGet("LikesByPost/{id}")]
+        public async Task<ActionResult<List<Like>>> Get(int id,int skip, int take)
         {
-            var likesByPost = await dataContext.likes.Where(l => l.PostId == id).ToListAsync();
-            return Ok(likesByPost);
+
+            try
+            {
+                var likes = await unitOfWork.Like.All();
+                var likesByPost = likes.Where(l => l.PostId == id);
+                List<Like> pagenation = likes.ToList();
+                List<LikeModel> likesWithUsers = new List<LikeModel>();
+                
+
+                if (skip > 0)
+                {
+                    pagenation.RemoveRange(0, skip);
+                }
+
+                var takenLikes = pagenation.Take(take);
+
+                foreach (var item in takenLikes)
+                {
+                    var targetUser = await unitOfWork.User.GetById(item.UserId);
+                    var Like = new LikeModel
+                    {
+                        Like = item,
+                        User = targetUser,
+                        LikesCount = likesByPost.Count(),
+                        
+                    };
+                    likesWithUsers.Add(Like);
+                }
+
+                return Ok(likesWithUsers);
+
+            } catch (Exception ex) { return  BadRequest(ex.Message); }  
         }
 
         [HttpDelete]
-        public async Task<ActionResult<Like>> Delete(int id)
+        public async Task<ActionResult<Like>> Delete(Like likeFRequest)
         {
-            var like = dataContext.likes.FirstOrDefault(l => l.ID  == id);
-            if (like == null) return BadRequest();
+            try
+            {
+                var likes = await unitOfWork.Like.All();
+                var like = likes.FirstOrDefault(l => l.UserId ==  likeFRequest.UserId && l.PostId == likeFRequest.PostId);
+                if (like == null) return BadRequest();
 
-            dataContext.likes.Remove(like);
-            await dataContext.SaveChangesAsync();
-            return Ok();
+                var likedPost = await unitOfWork.Post.GetById(like.PostId);
+                likedPost.Likes--;
+
+                await unitOfWork.Like.Delete(like);
+                await unitOfWork.CompleteAsync();
+                return Ok();
+            } catch (Exception ex) { return  NotFound(ex.Message); }
         }
+    }
+
+    internal class LikeModel
+    {
+        public Like Like { get; set; }
+        public User User { get; set; }
+        public int LikesCount { get; set; }
+    }
+
+    internal class LikeResponse
+    {
+        Like Like { get; set; }
+        User LikeOwner { get; set; }
+
     }
 }

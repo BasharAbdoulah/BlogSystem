@@ -24,7 +24,8 @@ namespace BlogSystem.Core
 
         public virtual async Task<IEnumerable<T>> All()
         {
-            return await _dbSet.ToListAsync();  
+                var entities = await _dbSet.ToListAsync();  
+                    return(entities);
         }
 
         public virtual async Task<bool> Delete(T entity)
@@ -40,24 +41,17 @@ namespace BlogSystem.Core
         }
 
 
-        public Task<T> GetById(Guid id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> Delete(Guid id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> Upsert(T entity)
-        {
-            throw new NotImplementedException();
-        }
-
         public Task<IEnumerable<T>> Find(Expression<Func<T, bool>> predicate)
         {
             throw new NotImplementedException();
         }
+
+        public async Task<T> GetById(int id)
+        {
+            var entity = await _dbSet.FindAsync(id);
+            return (entity);
+        }
+
+
     }
 }

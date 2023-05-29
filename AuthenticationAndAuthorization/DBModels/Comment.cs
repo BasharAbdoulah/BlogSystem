@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BlogSystem.DBModels
 {
@@ -14,7 +15,7 @@ namespace BlogSystem.DBModels
         public int PostId { get; set; }
         [Required]
         public int UserId { get; set; }
-
+        
         public DateTime CommentDate { get; set; }
     }
 }

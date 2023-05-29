@@ -12,12 +12,19 @@ namespace BlogSystem.UOW
         public IUserRepository User { get; private set; }
         public IPostRepository Post { get; private set; }
 
+        public ILikeRepository Like { get; private set; }
+
+        public ICommentRepository Comment { get; private set; } 
+
         public UnitOfWork(BlogDataContext context, ILoggerFactory loggerFactory)
         {
             _Context = context;
             logger = loggerFactory.CreateLogger("logs");
 
             User = new UserRepository(context, logger);
+            Post = new PostRepository(context, logger);
+            Like = new LikeRepository(context, logger);
+            Comment = new CommentRepository(context, logger);
         }
 
         public async Task CompleteAsync()

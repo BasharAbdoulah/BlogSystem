@@ -6,7 +6,7 @@ namespace BlogSystem.DBModels
     {
         public int Id { get; set; }
 
-        public string? FullName { get; set; }
+        public string FullName { get; set; }
 
         [Required]
         public string Email { get; set; } = null!;
@@ -16,6 +16,7 @@ namespace BlogSystem.DBModels
 
         public bool? Admin { get; set; } 
 
-        public DateTime? CreatedDate { get; set; }
+        public DateTime? DOB { get; set; }
+        public string? ProfileImg { get; set; }
     }
 }

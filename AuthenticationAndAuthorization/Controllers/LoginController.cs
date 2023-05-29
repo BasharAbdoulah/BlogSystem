@@ -27,7 +27,7 @@ namespace BlogSystem.Controllers
 
         [HttpPost]
         [Route("PostLoginDetails")]
-        public async Task<IActionResult> PostLoginDetails(UserModel _userData)
+        public async Task<IActionResult> PostLoginDetails(UserModel? _userData)
         {
             if(_userData!=null)
             {
@@ -51,7 +51,7 @@ namespace BlogSystem.Controllers
                         new Claim(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.ToString()),
                         new Claim("UserId", _userData.ID.ToString()),
                         new Claim("Admin", resultLoginCheck.Admin.ToString()),
-                        new Claim("UserName", _userData.FullName),
+                        //new Claim("UserName", _userData.FullName),
                         new Claim("Email", _userData.Email),
                         new Claim(ClaimTypes.Role, "User")
 
@@ -60,7 +60,7 @@ namespace BlogSystem.Controllers
                     if (resultLoginCheck.Admin == true)
                     {
 
-                        claims[7] = new Claim(ClaimTypes.Role, "Admin");
+                        claims[6] = new Claim(ClaimTypes.Role, "Admin");
                     }
 
 
@@ -70,7 +70,7 @@ namespace BlogSystem.Controllers
                         configuration["Jwt:Issuer"],
                         configuration["Jwt:Audience"],
                         claims,
-                        expires: DateTime.UtcNow.AddMinutes(10),
+                        expires: DateTime.UtcNow.AddDays(1),
                         signingCredentials: signIn);
 
 

@@ -12,7 +12,6 @@ namespace BlogSystem.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        private readonly BlogDataContext context;
         private readonly IUnitOfWork unitOfWork;
 
 
@@ -25,15 +24,18 @@ namespace BlogSystem.Controllers
         public async Task<ActionResult<List<User>>> get()
         {
     
-            var users = await unitOfWork.User.All();
-            return Ok(users);
+               try
+            {
+                var users = await unitOfWork.User.All();
+                return Ok(users);
+            } catch (Exception ex) { return BadRequest(ex.Message); }
         }
         //
 
-        [HttpGet("{id}"), Authorize]
-        public async Task<ActionResult<User>> get(int id)
+        [HttpGet("GetById/{id}"), Authorize]
+        public async Task<ActionResult<User>> getUserById(int id)
         {
-            var user = await context.Users.FindAsync(id);
+            var user = await GetById(id);
             if (user == null)
             {
                 return BadRequest();
@@ -53,10 +55,8 @@ namespace BlogSystem.Controllers
             else
                 try
                 {
-
-
-                    context.Users.Add(user);
-                    await context.SaveChangesAsync();
+                    unitOfWork.User.Add(user);
+                    unitOfWork.CompleteAsync();
                 }
                 catch (Exception ex)
                 {
@@ -69,11 +69,11 @@ namespace BlogSystem.Controllers
         [HttpDelete, Authorize]
         public async Task<ActionResult<User>> Delete(int id)
         {
-            var blog = await context.Users.FindAsync(id);
+            var blog = await GetById(id);
 
             if (blog == null) { return BadRequest(); }
-            else context.Users.Remove(blog);
-            await context.SaveChangesAsync();
+            else await unitOfWork.User.Delete(blog);
+           await unitOfWork.CompleteAsync();
             return Ok("User has been deleted!");
         }
 
@@ -81,24 +81,26 @@ namespace BlogSystem.Controllers
         [HttpPut, Authorize]
         public async Task<ActionResult<User>> Edit(User NewUser)
         {
-            var user = await context.Users.FindAsync(NewUser.Id);
-            if (user == null)
+            try
             {
-                return NotFound();
-            }
+                var user = await GetById(NewUser.Id);
+                await unitOfWork.User.Update(user);
 
-            //user.FirstName = NewUser.FirstName;
-            //user.LastName = NewUser.LastName;
-            //user.Email = NewUser.Email;
-            //user.Dob = NewUser.Dob;
-            //user.Password = NewUser.Password;
-            //user.ProfileImg = NewUser.ProfileImg;   
+                await unitOfWork.CompleteAsync();
+                if (user == null)
+                {
+                    return NotFound();
+                }
+            } catch (Exception ex) { return BadRequest(ex.Message); }; 
 
-
-            await context.SaveChangesAsync();
-
-
+ 
             return Ok("The user has been edited");
+        }
+
+        public Task<User> GetById(int id)
+        {
+            var user = unitOfWork.User.GetById(id);
+            return user;
         }
     }
 }

@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
+using System.Data;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -50,7 +51,13 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 //    options.AddPolicy("UserPolicy", policy => policy.RequireRole("User"));
 //});
 
-builder.Services.AddDbContext<BlogDataContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+//builder.Services.AddDbContext<BlogDataContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+var conString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+builder.Services.AddDbContextPool<BlogDataContext>(alnoukhazaDBContext =>
+    alnoukhazaDBContext.UseMySql(conString, new MySqlServerVersion(new Version(8, 0, 26))));
+
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 var app = builder.Build();
 
